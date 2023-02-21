@@ -170,7 +170,7 @@ function! sj#elixir#SplitComma(left, right)
   return 1
 endfunction
 
-function! sj#elixir#Record2Map(left, right, eq)
+function! sj#elixir#Record2Map(left, right, eq, init)
     let [from, to] = sj#LocateBracesAroundCursor(a:left, a:right, [
                 \ 'elixirInterpolationDelimiter',
                 \ 'elixirString',
@@ -190,7 +190,7 @@ function! sj#elixir#Record2Map(left, right, eq)
 
     " substitute [1, 2, | tail]
     let items[-1] = substitute(items[-1], "\\(|[^>].*\\)", "\n\\1", "")
-    let map = []
+    let map = a:init
     for item in items
         let item = substitute(item, '=', a:eq, "")
         call add(map, item)
