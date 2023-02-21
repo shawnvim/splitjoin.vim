@@ -170,6 +170,38 @@ function! sj#elixir#SplitComma(left, right)
   return 1
 endfunction
 
+function! sj#elixir#Record2Map(left, right, eq)
+    let [from, to] = sj#LocateBracesAroundCursor(a:left, a:right, [
+                \ 'elixirInterpolationDelimiter',
+                \ 'elixirString',
+                \ 'elixirStringDelimiter',
+                \ 'elixirSigilDelimiter',
+                \ ])
+
+    if from < 0
+        return 0
+    endif
+
+    let items = sj#ParseJsonObjectBody(from + 1, to - 1)
+
+    if len(items) == 0 || to - from < 2
+        return 1
+    endif
+
+    " substitute [1, 2, | tail]
+    let items[-1] = substitute(items[-1], "\\(|[^>].*\\)", "\n\\1", "")
+    let map = []
+    for item in items
+        let item = substitute(item, '=', a:eq, "")
+        call add(map, item)
+    endfor
+    let body = a:left . join(map, ",\n") . a:right
+
+    call sj#ReplaceMotion('Va' . a:left, body)
+    return 1
+endfunction
+
+
 function! sj#elixir#SplitArray()
   let [from, to] = sj#LocateBracesAroundCursor('[', ']', [
         \ 'elixirInterpolationDelimiter',
